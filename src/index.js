@@ -1,7 +1,9 @@
 import Phaser from "phaser";
 import Tiles from "./assets/tiles/arcade_platformerV2-transparent.png";
+import Spikes from "./assets/tiles/spikes.png";
 import TileMap from "./assets/tiles/game.json";
 import Dude from "./assets/dude.png";
+import Star from "./assets/star.png";
 
 const config = {
   type: Phaser.AUTO,
@@ -23,9 +25,15 @@ const config = {
 const game = new Phaser.Game(config);
 let player;
 let cursors;
+let stars;
+let score = 0;
+let scoreText;
+let gameOverText;
 
 function preload() {
   this.load.image("tiles", Tiles);
+  this.load.image("spikes", Spikes);
+  this.load.image("star", Star);
   this.load.tilemapTiledJSON("map", TileMap);
   this.load.spritesheet("dude", Dude, { frameWidth: 32, frameHeight: 48 });
 }
@@ -33,16 +41,57 @@ function preload() {
 function create() {
   const map = this.make.tilemap({ key: "map", tileWidth: 16, tileHeight: 16 });
   const tileset = map.addTilesetImage("terrain", "tiles");
+  const spikeset = map.addTilesetImage("spikes", "spikes");
   const worldLayer = map.createStaticLayer("world", tileset, 0, 0);
   const treeLayer = map.createStaticLayer("trees", tileset, 0, 0);
+  const spikes = map.createStaticLayer("spikes", spikeset, 0, 0);
 
   player = this.physics.add.sprite(40, 40, "dude");
   player.body.setGravityY(300);
 
   //sets collision by property
   worldLayer.setCollisionByProperty({ collide: true });
+  spikes.setCollisionByProperty({ collide: true });
   this.physics.add.collider(player, worldLayer);
+  this.physics.add.collider(player, spikes, hitFire, null, this);
   player.setBounce(0.2);
+
+  stars = this.physics.add.group({
+    key: "star",
+    repeat: 11,
+    setXY: { x: 12, y: 0, stepX: 70 }
+  });
+  this.physics.add.collider(stars, worldLayer);
+
+  this.physics.add.overlap(player, stars, collectStar, null, this);
+  function collectStar(player, star) {
+    star.disableBody(true, true);
+    score += 10;
+    scoreText.setText("Score: " + score);
+  }
+
+  function hitFire(player, spikes) {
+    this.physics.pause();
+    player.setTint(0xff0000);
+    player.anims.play("turn");
+    gameOverText = this.add.text(300, 150, "GAME OVER", {
+      fontSize: "32px",
+      color: "red",
+      strokeThickness: 2
+    });
+
+    gameOverText.setScrollFactor(0);
+  }
+
+  scoreText = this.add.text(16, 16, "score: 0", {
+    fontSize: "16px",
+    fill: "#000"
+  });
+
+  this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+  this.cameras.main.startFollow(player);
+
+  scoreText.setScrollFactor(0);
 
   this.anims.create({
     key: "left",
