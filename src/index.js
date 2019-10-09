@@ -23,13 +23,17 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
+// variables
 let player;
 let cursors;
 let stars;
 let score = 0;
 let scoreText;
 let gameOverText;
+let restartButton;
 
+// loads assets
 function preload() {
   this.load.image("tiles", Tiles);
   this.load.image("spikes", Spikes);
@@ -38,6 +42,7 @@ function preload() {
   this.load.spritesheet("dude", Dude, { frameWidth: 32, frameHeight: 48 });
 }
 
+// creates all assets
 function create() {
   const map = this.make.tilemap({ key: "map", tileWidth: 16, tileHeight: 16 });
   const tileset = map.addTilesetImage("terrain", "tiles");
@@ -56,20 +61,22 @@ function create() {
   this.physics.add.collider(player, spikes, hitFire, null, this);
   player.setBounce(0.2);
 
+  // makes stars collectable & not fall off map
   stars = this.physics.add.group({
     key: "star",
     repeat: 11,
     setXY: { x: 12, y: 0, stepX: 70 }
   });
   this.physics.add.collider(stars, worldLayer);
-
   this.physics.add.overlap(player, stars, collectStar, null, this);
+
   function collectStar(player, star) {
     star.disableBody(true, true);
     score += 10;
     scoreText.setText("Score: " + score);
   }
 
+  // Make player lose when touching fire
   function hitFire(player, spikes) {
     this.physics.pause();
     player.setTint(0xff0000);
@@ -77,22 +84,47 @@ function create() {
     gameOverText = this.add.text(300, 150, "GAME OVER", {
       fontSize: "32px",
       color: "red",
-      strokeThickness: 2
+      strokeThickness: 2,
+      backgroundColor: "black",
+      padding: {
+        left: 5,
+        right: 5,
+        top: 5,
+        bottom: 5
+      }
     });
-
     gameOverText.setScrollFactor(0);
+
+    // restarts game if clicked
+    restartButton = this.add.text(320, 200, "RESTART", {
+      fontSize: "32px",
+      color: "red",
+      strokeThickness: 2,
+      backgroundColor: "black",
+      padding: {
+        left: 5,
+        right: 5,
+        top: 5,
+        bottom: 5
+      }
+    });
+    restartButton.setScrollFactor(0);
+    restartButton.setInteractive();
+    restartButton.on("pointerdown", () => {
+      this.scene.restart();
+    });
   }
 
   scoreText = this.add.text(16, 16, "score: 0", {
     fontSize: "16px",
     fill: "#000"
   });
+  scoreText.setScrollFactor(0);
 
   this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   this.cameras.main.startFollow(player);
 
-  scoreText.setScrollFactor(0);
-
+  // creates walking animations
   this.anims.create({
     key: "left",
     frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
@@ -115,6 +147,7 @@ function create() {
   cursors = this.input.keyboard.createCursorKeys();
 }
 
+// updates when players move
 function update() {
   if (cursors.left.isDown) {
     player.setVelocityX(-160);
