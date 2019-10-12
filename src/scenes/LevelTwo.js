@@ -1,14 +1,14 @@
 import "phaser";
-import Tiles from "../assets/level1/arcade_platformerV2-transparent.png";
-import Spikes from "../assets/level1/spikes.png";
-import End from "../assets/level1/end.png";
-import TileMap from "../assets/level1/game.json";
+import Tiles from "../assets/level2/arcade_platformerV2-transparent.png";
+import Spikes from "../assets/level2/spikes.png";
+import End from "../assets/level2/end.png";
+import TileMap from "../assets/level2/level2.json";
 import Dude from "../assets/dude.png";
 import Star from "../assets/star.png";
 
-export default class LevelOne extends Phaser.Scene {
+export default class LevelTwo extends Phaser.Scene {
   constructor() {
-    super("Game");
+    super("Level2");
   }
 
   preload() {
@@ -42,7 +42,6 @@ export default class LevelOne extends Phaser.Scene {
     const spikeset = map.addTilesetImage("spikes", "spikes");
     const endset = map.addTilesetImage("end", "end");
     const worldLayer = map.createStaticLayer("world", tileset, 0, 0);
-    const treeLayer = map.createStaticLayer("trees", tileset, 0, 0);
     const spikes = map.createStaticLayer("spikes", spikeset, 0, 0);
     const end = map.createStaticLayer("end", endset, 0, 0);
 
@@ -80,8 +79,6 @@ export default class LevelOne extends Phaser.Scene {
 
     // complete level
     function completeLevel(player, end) {
-      this.music.stop();
-      this.scene.start("Level2");
       this.physics.pause();
       this.youWinText = this.add.text(300, 150, "YOU WIN", {
         fontSize: "32px",
