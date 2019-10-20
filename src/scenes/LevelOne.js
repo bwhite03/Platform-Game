@@ -1,7 +1,5 @@
 import "phaser";
-import Tiles from "../assets/level1/arcade_platformerV2-transparent.png";
-import Spikes from "../assets/level1/spikes.png";
-import End from "../assets/level1/end.png";
+import Tiles from "../assets/level1/tileset.png";
 import TileMap from "../assets/level1/game.json";
 import Dude from "../assets/dude.png";
 import Star from "../assets/star.png";
@@ -13,8 +11,6 @@ export default class LevelOne extends Phaser.Scene {
 
   preload() {
     this.load.image("tiles", Tiles);
-    this.load.image("spikes", Spikes);
-    this.load.image("end", End);
     this.load.image("star", Star);
     this.load.tilemapTiledJSON("map", TileMap);
     this.load.spritesheet("dude", Dude, { frameWidth: 32, frameHeight: 48 });
@@ -39,34 +35,32 @@ export default class LevelOne extends Phaser.Scene {
       tileHeight: 16
     });
     const tileset = map.addTilesetImage("terrain", "tiles");
-    const spikeset = map.addTilesetImage("spikes", "spikes");
-    const endset = map.addTilesetImage("end", "end");
+    const background = map.createStaticLayer("background", tileset, 0, 0);
     const worldLayer = map.createStaticLayer("world", tileset, 0, 0);
-    const treeLayer = map.createStaticLayer("trees", tileset, 0, 0);
-    const spikes = map.createStaticLayer("spikes", spikeset, 0, 0);
-    const end = map.createStaticLayer("end", endset, 0, 0);
+    const deathLayer = map.createStaticLayer("death", tileset, 0, 0);
+    const stars = map.createFromObjects("stars", "star1", { key: "star" });
 
     // play background music;
     this.music = this.sound.add("background", { volume: 0.3, loop: true });
     this.music.play();
 
-    this.player = this.physics.add.sprite(40, 40, "dude");
+    this.player = this.physics.add.sprite(70, 700, "dude").setScale(0.8);
     this.player.body.setGravityY(300);
 
     //sets collision by property
     worldLayer.setCollisionByProperty({ collide: true });
-    spikes.setCollisionByProperty({ collide: true });
-    end.setCollisionByProperty({ collide: true });
+    deathLayer.setCollisionByProperty({ collide: true });
+
     this.physics.add.collider(this.player, worldLayer);
-    this.physics.add.collider(this.player, end, completeLevel, null, this);
-    this.physics.add.collider(this.player, spikes, hitFire, null, this);
+    // this.physics.add.collider(this.player, end, completeLevel, null, this);
+    this.physics.add.collider(this.player, deathLayer, hitFire, null, this);
     this.player.setBounce(0.2);
 
     // makes stars collectable & not fall off map
     this.stars = this.physics.add.group({
       key: "star",
       repeat: 32,
-      setXY: { x: 12, y: 0, stepX: 70 }
+      setXY: { x: 10, y: 50, stepX: 70 }
     });
     this.physics.add.collider(this.stars, worldLayer);
     this.physics.add.overlap(this.player, this.stars, collectStar, null, this);
