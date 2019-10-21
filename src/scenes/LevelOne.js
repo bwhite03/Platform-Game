@@ -38,12 +38,20 @@ export default class LevelOne extends Phaser.Scene {
     const background = map.createStaticLayer("background", tileset, 0, 0);
     const worldLayer = map.createStaticLayer("world", tileset, 0, 0);
     const deathLayer = map.createStaticLayer("death", tileset, 0, 0);
-    const stars = map.createFromObjects("stars", "star1", { key: "star" });
+
+    // loop through all star objects
+    const stars = map.getObjectLayer("stars")["objects"];
+    this.stars = this.physics.add.staticGroup();
+    stars.forEach(object => {
+      this.stars.create(object.x, object.y, "star");
+    });
+    console.log(stars);
 
     // play background music;
     this.music = this.sound.add("background", { volume: 0.3, loop: true });
     this.music.play();
 
+    // spawn player
     this.player = this.physics.add.sprite(70, 700, "dude").setScale(0.8);
     this.player.body.setGravityY(300);
 
@@ -52,17 +60,10 @@ export default class LevelOne extends Phaser.Scene {
     deathLayer.setCollisionByProperty({ collide: true });
 
     this.physics.add.collider(this.player, worldLayer);
-    // this.physics.add.collider(this.player, end, completeLevel, null, this);
     this.physics.add.collider(this.player, deathLayer, hitFire, null, this);
-    this.player.setBounce(0.2);
+    // this.physics.add.collider(this.player, end, completeLevel, null, this);
 
-    // makes stars collectable & not fall off map
-    this.stars = this.physics.add.group({
-      key: "star",
-      repeat: 32,
-      setXY: { x: 10, y: 50, stepX: 70 }
-    });
-    this.physics.add.collider(this.stars, worldLayer);
+    // collect stars
     this.physics.add.overlap(this.player, this.stars, collectStar, null, this);
 
     function collectStar(player, star) {
@@ -140,7 +141,6 @@ export default class LevelOne extends Phaser.Scene {
     this.scoreText.setScrollFactor(0);
 
     // makes camera follow player
-
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(this.player);
 
@@ -170,15 +170,12 @@ export default class LevelOne extends Phaser.Scene {
   update() {
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
-
       this.player.anims.play("left", true);
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(160);
-
       this.player.anims.play("right", true);
     } else {
       this.player.setVelocityX(0);
-
       this.player.anims.play("turn");
     }
 
