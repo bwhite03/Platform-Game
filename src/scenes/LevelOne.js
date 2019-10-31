@@ -143,6 +143,7 @@ export default class LevelOne extends Phaser.Scene {
     // makes camera follow player
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(this.player);
+    this.cameras.main.roundPixels = true;
 
     // creates walking animations
     this.anims.create({
@@ -180,7 +181,7 @@ export default class LevelOne extends Phaser.Scene {
     }
 
     if (this.cursors.up.isDown && this.player.body.onFloor()) {
-      this.player.setVelocityY(-300);
+      this.player.setVelocityY(-280);
     }
   }
 }
