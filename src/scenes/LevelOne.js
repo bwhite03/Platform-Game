@@ -134,9 +134,9 @@ export default class LevelOne extends Phaser.Scene {
     }
 
     // shows players score
-    this.scoreText = this.add.text(16, 16, "score: 0", {
-      fontSize: "16px",
-      fill: "#000"
+    this.scoreText = this.add.text(16, 16, "Score: 0", {
+      fontSize: "20px",
+      fill: "#fff"
     });
     this.scoreText.setScrollFactor(0);
 
